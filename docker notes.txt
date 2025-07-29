@@ -1,0 +1,291 @@
+DOCKER:
+=> Docker is a containerization tool
+to install docker we use (install in root user)
+apt install docker.io -y (to install docker we need a virtual machine)
+docker --version(to check the version)
+
+=>docker install on each server and provides simple commands you can use to built start
+or stop containers
+=> docker is an operating system for containers
+=>in docker you can create multiple containers
+containers => in docker a container is a lightweight standlone executable package of software that includes everything you need to run an application
+ when image is run it becomes a container
+
+DOCKER IMAGES:- A docker image is a read-only-templates containing instructions for creating a docker containers
+=> to create images(docker pull image name example:httpd)
+=> to create images we need to pull images form a docker registory hub.docker.com
+=> to delete images (docker rmi <image name>)
+=> to search images (docker images)
+=> to see layers and updates (docker image inspect)
+
+=> to see dangling images:- Dangling Docker images are untagged images that are not associated with any containers, whether running or stopped. They represent layers of images that are no longer referenced by any tagged image or active container.
+=> to find untagged images (docker images-f dangling=true)
+=> to delete untagged images (docker images prune)
+=> to delete the images that are not associated to the containers (docker image prune -a)
+ 
+ 
+CONTAINERS:-
+============
+=> Docker containers are lightweight, portable, and isolated environments that run software consistently across different systems. Think of them like mini-virtual machines—but faster and more efficient.
+=> to create container (docker run -d -it --name my-container -p 8080:80 image name)
+             -d Run in detached (background) mode
+             name : Name your container
+             it : intra active mode
+             -p :Port mapping (host:container)
+=>List running containers:
+            (docker ps)
+=>List all containers (including stopped ones)
+            (docker ps -a)
+=>Stop a container:
+             [docker stop my-container](container id or name)
+=>Remove a container:
+             (docker rm my-container)(container id or name)
+=>View logs from a container:
+             (docker logs my-container)
+=>Access a container's shell
+             (docker exec -it my-container /bin/bash)
+=> to inspect container
+             (docker inspect <container_id>)
+ 
+   custom image creation:-
+    ---------------------
+=> to create custom images (docker commit servername custom imagename; which image u want to create name) 
+-> inspect image (docker image inspect custom imagename)
+=> basically docker image creation can be done in two methods
+   1:- docker commit [manual creation]
+   (docker commit --help)
+--> we get commit options to work on image creation
+    usage:- docker commit[options] container name repositoryname(custom image name)
+    =>options: -a -> author string --author mention by using -a
+               -c -> change list --- apply docker fike instruction to a created image
+               -m -> message string --- commit message of image
+               -p -> pause --- pause container during image commit
+   2:- automation[docker file] :-A Dockerfile is a script containing a set of instructions on how to build a Docker image. It's often used to automate the setup of environments, applications, or services.
+
+script for build image with example
+==================================
+# Use an official Python base image
+FROM python:3.11-slim
+
+# Set the working directory inside the container
+WORKDIR /app
+
+# Copy the requirements file and install dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy your application files into the container
+COPY . .
+
+# Run the application (e.g., a Python script or web server)
+CMD ["python", "main.py"]
+ 
+# HEALTH CHECK it will check the health of the image
+
+==> Purpose of Dockerfile:
+
+   A Dockerfile contains instructions to build a Docker image. It automates:
+
+->Installing dependencies
+
+->Copying application files 
+
+->Compiling code (if needed)
+
+->Setting environment variables
+
+->Defining the startup command
+
+==>  write Docker build instructions like:
+
+FROM ubuntu:20.04
+RUN apt-get update && apt-get install -y nginx
+CMD ["nginx", "-g", "daemon off;"]
+
+To save and exit in vi:
+
+Press Esc
+
+Type :wq
+
+Press Enter. (vi docker file)
+
+=> to create an image (docker built -t image name .(. = Current Directory)
+=> And run it:(docker run -d -p 8080:80 my-image-name)
+  => docker run -it --name srvo1 image name sh
+      sh → run shell inside the container
+
+
+-> Want to connect to a database? Use Docker Compose.
+
+-> Want to deploy via Jenkins? Add a docker build and docker push stage to your pipeline.
+
+-> Want to rollback? Tag each image with the Git commit or build number.
+
+DOCKER VOLUMES:-
+================
+=> Docker volumes are a way to persist data created and used by Docker containers. Without volumes, data stored inside a container is lost when the container is removed.
+
+=> Volumes are the preferred method for managing persistent data in Docker.
+
+=> Feature	      Benefit
+Persistence  =	Data survives container restarts and removals
+Sharing	     =  Share data between containers
+Isolation    =   Keep data separate from container layers
+Backup-friendly =Easy to back up and migrate
+
+=> Create a Volume [docker volume create my-volume]
+                      *my volume = volume name
+                   [docker inspect volume name]
+
+=> To store container data to volumes  [docker run -d \
+                               --name my-container \
+                             -v my-volume:/app/data \
+                               my-image ]
+
+=> my-volume is the Docker-managed volume name
+
+/app/data is the path inside the container
+
+Now anything written to /app/data inside the container is stored in my-volume.
+
+Command :-                     Description:-
+ 
+docker volume ls               ==>  List all volumes
+docker volume inspect my-volume	==> Show details about a volume
+docker volume rm my-volume	==> Remove a volume
+docker volume prune	       ==>  Remove all unused volumes
+
+DOCKER PORTS AND LIMITS:-
+========================
+=> Docker Ports :-Containers have their own internal network. If your app listens on a port inside the container (e.g. 8080), you need to map that port to the host system to access it externally.
+
+    Basic Port Mapping Syntax:
+
+ ==>    [docker run -d -p <host_port>:<container_port> image_name ]
+          example: docker run -d -p 8080:80 nginx
+
+Docker Resource Limits:
+  ==> By default, containers can use all host resources. You can limit CPU and memory usage to prevent overloading your system.
+
+  ===>  Limit Memory[docker run -d --memory=512m image name]
+ => to inspect container
+             (docker inspect <container_id>)
+
+DOCKER NETWORK:-
+===============
+
+=>Great! Understanding Docker networks is key to managing how containers communicate with each other, your host system, and the outside world.
+
+Docker Network Types:
+
+Type	                        Description
+
+bridge (default)  =>	Private network for a single host; containers can talk to each
+                        other via IP or name
+
+host  =>	         Container shares the host's network stack (no isolation)
+
+none =>	                 Disables all networking for a container
+
+overlay	 =>               Multi-host networking (used with Docker Swarm)
+
+macvlan	=>                Assigns MAC address to containers (used in advanced setups)
+
+
+==> Creating and Using a Custom Network:-
+    ===================================
+
+-> TO create a network:(docker network create my-network) my network is a custom name you can create what ever your want
+
+-> Run Containers in That Network:-(docker run -d --name db --network my-network nginx)
+
+->Network Management Commands:
+
+    Command                                  Purpose
+
+ `docker network ls`                     => List networks
+ `docker network inspect my-network`     => View network details (IP, containers, etc.)
+ `docker network rm my-network`          => Delete a network
+ `docker network connect` / `disconnect` => Attach or detach containers from networks
+
+TO CONNECT TWO CONTAINERS WE USE PING COMMAND :
+
+-> You can ping container2 from container1 by name
+
+-> You  need to hard-code IPs
+
+   docker exec -dit container1 ping container2
+
+  -> to check container ip address of custom network
+        (docker network inspect custom network name)
+
+==> Container Route Tables
+   -->  Every Docker container has its own network namespace, which means it has:
+
+   -->   Its own IP address
+
+  -->    Its own routing table
+
+  -->   Its own set of network interfaces
+
+-->View a Container’s Routing Table(docker exec -it <container_name> ip route)
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
